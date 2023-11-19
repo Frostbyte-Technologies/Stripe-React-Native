@@ -54,12 +54,29 @@ export default function CreateTokenScreen() {
         title="Create a token from a card"
         accessibilityLabel="Create a token from a card"
       />
+      <Button
+        variant="primary"
+        onPress={() => _createToken('RawCard')}
+        title="Create a RAW TOKEN from a card"
+        accessibilityLabel="Create a token from a card"
+      />
     </PaymentScreen>
   );
 }
 
 function buildTestTokenParams(type: Token.Type): Token.CreateParams {
   switch (type) {
+    case 'RawCard':
+      return {
+        type: 'RawCard',
+        number: '4242424242424242',
+        cvc: '123',
+        expMonth: 12,
+        expYear: 24,
+        address: {
+          postalCode: "12345"
+        }
+      };
     case 'Pii':
       return {
         type: 'Pii',

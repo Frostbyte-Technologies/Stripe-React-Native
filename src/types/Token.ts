@@ -12,6 +12,7 @@ export type CardBrand =
 
 export type Type =
   | 'Account'
+  | 'RawCard'
   | 'BankAccount'
   | 'Card'
   | 'CvcUpdate'
@@ -70,12 +71,24 @@ export interface Card {
 
 export type CreateParams =
   | CreateCardTokenParams
+  | CreateRawCardTokenParams
   | CreateBankAccountTokenParams
   | CreatePiiTokenParams;
 
 /** Creates a single-use token that represents a credit card’s details. Use this in combination with either the CardField or CardForm components. This token can be used in place of a credit card object with any API method. See https://stripe.com/docs/api/tokens/create_card*/
 export type CreateCardTokenParams = {
   type: 'Card';
+  address?: Address;
+  name?: string;
+  currency?: string;
+};
+
+export type CreateRawCardTokenParams = {
+  type: 'RawCard';
+  number: string;
+  cvc?: string;
+  expMonth?: number;
+  expYear?: number;
   address?: Address;
   name?: string;
   currency?: string;

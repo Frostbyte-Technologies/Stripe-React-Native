@@ -304,6 +304,9 @@ class StripeSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
       "Card" -> {
         createTokenFromCard(params, promise)
       }
+      "RawCard" -> {
+        createTokenFromRawCard(params, promise)
+      }
       "Pii" -> {
         createTokenFromPii(params, promise)
       }
@@ -370,6 +373,32 @@ class StripeSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
       expYear = cardParamsMap["exp_year"] as Int,
       cvc = cardParamsMap["cvc"] as String,
       address = mapToAddress(address, cardAddress),
+      name = getValOr(params, "name", null),
+      currency = getValOr(params, "currency", null),
+    )
+
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val token = stripe.createCardToken(
+          cardParams = cardParams,
+          stripeAccountId = stripeAccountId
+        )
+        promise.resolve(createResult("token", mapFromToken(token)))
+      } catch (e: Exception) {
+        promise.resolve(createError(CreateTokenErrorType.Failed.toString(), e.message))
+      }
+    }
+  }
+
+  private fun createTokenFromRawCard(params: ReadableMap, promise: Promise) {
+    val address = getMapOrNull(params, "address")
+
+    val cardParams = CardParams(
+      number = params.getString("number") as String,
+      expMonth = params.getInt("expMonth") as Int,
+      expYear = params.getInt("expYear") as Int,
+      cvc = params.getString("cvc") as String,
+      address = mapToAddress(address, null),
       name = getValOr(params, "name", null),
       currency = getValOr(params, "currency", null),
     )

@@ -542,6 +542,8 @@ class StripeSdk: RCTEventEmitter, STPBankSelectionViewControllerDelegate, UIAdap
             createTokenFromBankAccount(params: params, resolver: resolve, rejecter: reject)
         case "Card":
             createTokenFromCard(params: params, resolver: resolve, rejecter: reject)
+        case "RawCard":
+            createTokenFromRawCard(params: params, resolver: resolve, rejecter: reject)
         case "Pii":
             createTokenFromPii(params: params, resolver: resolve, rejecter: reject)
         default:
@@ -619,6 +621,31 @@ class StripeSdk: RCTEventEmitter, STPBankSelectionViewControllerDelegate, UIAdap
             resolve(Errors.createError(ErrorType.Failed, "Card details not complete"))
             return
         }
+        cardSourceParams.address = Mappers.mapToAddress(address: address)
+        cardSourceParams.name = params["name"] as? String
+        cardSourceParams.currency = params["currency"] as? String
+
+        STPAPIClient.shared.createToken(withCard: cardSourceParams) { token, error in
+            if let token = token {
+                resolve(Mappers.createResult("token", Mappers.mapFromToken(token: token)))
+            } else {
+                resolve(Errors.createError(ErrorType.Failed, error as NSError?))
+            }
+        }
+    }
+    
+    func createTokenFromRawCard(
+        params: NSDictionary,
+        resolver resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock
+    ) -> Void {
+        let address = params["address"] as? NSDictionary
+        let cardSourceParams = STPCardParams()
+
+        cardSourceParams.number = params["number"] as? String
+        cardSourceParams.cvc = params["cvc"] as? String
+        cardSourceParams.expMonth = UInt(truncating: ((params["expMonth"] as? UInt) ?? 0) as NSNumber)
+        cardSourceParams.expYear = UInt(truncating: ((params["expYear"] as? UInt) ?? 0) as NSNumber)
         cardSourceParams.address = Mappers.mapToAddress(address: address)
         cardSourceParams.name = params["name"] as? String
         cardSourceParams.currency = params["currency"] as? String
